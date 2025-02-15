@@ -34,7 +34,7 @@
             text-align: center;
         }
         table {
-            width: 90%;
+            width: 100%;
             max-width: 600px;
             margin: 20px auto;
             border-collapse: collapse;
@@ -85,59 +85,12 @@
             font-weight: bold;
             margin-top: 20px;
         }
-
-        .settings {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-        }
-
-        .settings-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            background: var(--table-bg);
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-        }
-
-        .settings-menu button {
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-        }
-
-        .settings:hover .settings-menu {
-            display: block;
-        }
-        
-        @media (max-width: 600px) {
-            table {
-                font-size: 14px;
-            }
-            th, td {
-                padding: 8px;
-            }
-            input, button {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
-        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1"></script>
 </head>
 <body>
     <h2>Leaderboard Poin</h2>
-    <div class="settings">
-        <button>⚙️</button>
-        <div class="settings-menu">
-            <button onclick="setTheme('light')">Mode Siang ☀️</button>
-            <button onclick="setTheme('dark')">Mode Malam 🌙</button>
-        </div>
-    </div>
-    <br>
+    <button onclick="toggleTheme()">🌙/☀️</button>
     <input type="text" id="namaInput" placeholder="Masukkan Nama">
     <button onclick="tambahPoin()">Tambah Poin</button>
     <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
@@ -154,12 +107,8 @@
         let totalPoin = 0;
         let previousTopName = null;
 
-        function setTheme(mode) {
-            if (mode === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
         }
 
         function tambahPoin() {
@@ -177,6 +126,24 @@
             checkTopRanking();
             renderTable();
             animateTotalPoin();
+        }
+
+        function animateTotalPoin() {
+            let totalSpan = document.getElementById("totalPoin");
+            let currentTotal = totalPoin;
+            totalPoin = dataPoin.reduce((sum, item) => sum + item.poin, 0);
+            let increment = (totalPoin - currentTotal) / 20;
+            let count = 0;
+            let interval = setInterval(() => {
+                if (count >= 20) {
+                    totalSpan.textContent = totalPoin;
+                    clearInterval(interval);
+                } else {
+                    currentTotal += increment;
+                    totalSpan.textContent = Math.round(currentTotal);
+                    count++;
+                }
+            }, 50);
         }
 
         function getStars(rank) {
@@ -200,6 +167,25 @@
                 let row = table.insertRow();
                 let stars = getStars(index + 1);
                 row.innerHTML = `<td>${index + 1} ${stars}</td><td>${entry.nama}</td><td>${entry.poin}</td>`;
+            });
+        }
+
+        function checkTopRanking() {
+            if (dataPoin.length === 0) return;
+            let topName = dataPoin[0].nama;
+            if (topName !== previousTopName) {
+                previousTopName = topName;
+                showConfetti();
+            }
+        }
+
+        function showConfetti() {
+            confetti({
+                particleCount: 200,
+                spread: 200,
+                startVelocity: 50,
+                scalar: 1.5,
+                origin: { y: 0.6 }
             });
         }
     </script>
