@@ -1,43 +1,207 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Scoreboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Poin</title>
     <style>
-        /* Styling dasar, sesuaikan sesuai kebutuhan */
-        body { font-family: sans-serif; }
-        #input-container { margin-bottom: 10px; }
-        #scoreboard-table { border-collapse: collapse; width: 100%; }
-        #scoreboard-table th, #scoreboard-table td { border: 1px solid black; padding: 8px; text-align: left; }
-        #scrollable-area {
-          width: 300px;  /* Atur lebar sesuai kebutuhan */
-          height: 200px; /* Atur tinggi sesuai kebutuhan */
-          overflow-y: scroll; /* Aktifkan scrolling vertikal */
+        :root {
+            --bg-color: #f4f4f4;
+            --text-color: #000;
+            --table-bg: white;
+            --table-header-bg: #4CAF50;
+            --table-header-text: white;
+            --button-bg: #4CAF50;
+            --button-hover: #45a049;
+        }
+
+        body.dark-mode {
+            --bg-color: #1e1e1e;
+            --text-color: #fff;
+            --table-bg: #333;
+            --table-header-bg: #008000;
+            --table-header-text: white;
+            --button-bg: #008000;
+            --button-hover: #006400;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+        }
+        table {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: var(--table-bg);
+            color: var(--text-color);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+        }
+        tr:nth-child(even) {
+            background-color: rgba(200, 200, 200, 0.2);
+        }
+        
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input {
+            width: 80%;
+            max-width: 300px;
+            border: 2px solid var(--button-bg);
+            background: var(--table-bg);
+            color: var(--text-color);
+        }
+        
+        button {
+            background-color: var(--button-bg);
+            color: white;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: var(--button-hover);
+        }
+        
+        .total-poin {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .settings {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .settings-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: var(--table-bg);
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .settings-menu button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .settings:hover .settings-menu {
+            display: block;
+        }
+        
+        @media (max-width: 600px) {
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 8px;
+            }
+            input, button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1"></script>
 </head>
 <body>
-    <h1>Scoreboard</h1>
-
-    <div id="input-container">
-        <label for="name-input">Name:</label>
-        <input type="text" id="name-input">
-        <button id="input-button">Add Score</button>
+    <h2>Leaderboard Poin</h2>
+    <div class="settings">
+        <button>⚙️</button>
+        <div class="settings-menu">
+            <button onclick="setTheme('light')">Mode Siang ☀️</button>
+            <button onclick="setTheme('dark')">Mode Malam 🌙</button>
+        </div>
     </div>
+    <br>
+    <input type="text" id="namaInput" placeholder="Masukkan Nama">
+    <button onclick="tambahPoin()">Tambah Poin</button>
+    <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
+    <table id="leaderboard">
+        <tr>
+            <th>Rangking</th>
+            <th>Nama</th>
+            <th>Poin</th>
+        </tr>
+    </table>
 
-    <div id="scrollable-area">
-      <table id="scoreboard-table">
-          <thead>
-              <tr>
-                  <th>Rank</th>
-                  <th>Name</th>
-                  <th>Score</th>
-              </tr>
-          </thead>
-          <tbody id="scoreboard-body">
-              <!-- Data skor akan ditambahkan di sini oleh JavaScript -->
-          </tbody>
-      </table>
-    </div>
-    <script src="script.js"></script>
+    <script>
+        let dataPoin = [];
+        let totalPoin = 0;
+        let previousTopName = null;
+
+        function setTheme(mode) {
+            if (mode === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function tambahPoin() {
+            let nama = document.getElementById('namaInput').value.trim();
+            if (nama === '') return;
+            
+            let existing = dataPoin.find(entry => entry.nama === nama);
+            if (existing) {
+                existing.poin += 10;
+            } else {
+                dataPoin.push({ nama: nama, poin: 10 });
+            }
+            
+            dataPoin.sort((a, b) => b.poin - a.poin);
+            checkTopRanking();
+            renderTable();
+            animateTotalPoin();
+        }
+
+        function getStars(rank) {
+            if (rank === 1) return '⭐⭐⭐';
+            if (rank === 2) return '⭐⭐';
+            if (rank === 3) return '⭐';
+            return '';
+        }
+
+        function renderTable() {
+            let table = document.getElementById('leaderboard');
+            table.innerHTML = `
+                <tr>
+                    <th>Rangking</th>
+                    <th>Nama</th>
+                    <th>Poin</th>
+                </tr>
+            `;
+            
+            dataPoin.forEach((entry, index) => {
+                let row = table.insertRow();
+                let stars = getStars(index + 1);
+                row.innerHTML = `<td>${index + 1} ${stars}</td><td>${entry.nama}</td><td>${entry.poin}</td>`;
+            });
+        }
+    </script>
 </body>
 </html>
