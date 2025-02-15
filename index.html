@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scoreboard</title>
+    <style>
+        /* Styling dasar, sesuaikan sesuai kebutuhan */
+        body { font-family: sans-serif; }
+        #input-container { margin-bottom: 10px; }
+        #scoreboard-table { border-collapse: collapse; width: 100%; }
+        #scoreboard-table th, #scoreboard-table td { border: 1px solid black; padding: 8px; text-align: left; }
+        #scrollable-area {
+          width: 300px;  /* Atur lebar sesuai kebutuhan */
+          height: 200px; /* Atur tinggi sesuai kebutuhan */
+          overflow-y: scroll; /* Aktifkan scrolling vertikal */
+        }
+    </style>
+</head>
+<body>
+    <h1>Scoreboard</h1>
+
+    <div id="input-container">
+        <label for="name-input">Name:</label>
+        <input type="text" id="name-input">
+        <button id="input-button">Add Score</button>
+    </div>
+
+    <div id="scrollable-area">
+      <table id="scoreboard-table">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="scoreboard-body">
+              <!-- Data skor akan ditambahkan di sini oleh JavaScript -->
+          </tbody>
+      </table>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
