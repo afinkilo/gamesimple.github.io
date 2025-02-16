@@ -35,6 +35,7 @@
             box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
             word-wrap: break-word;
             overflow-x: auto;
+            position: relative; /* Untuk positioning koin absolut */
         }
 
         table {
@@ -103,6 +104,19 @@
             font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
+            position: relative; /* For coin counter positioning */
+        }
+
+        .total-poin span {
+            position: relative;
+            z-index: 2; /* Ensure span is above coins */
+        }
+
+        .coin {
+            position: absolute;
+            font-size: 1.2em; /* Ukuran icon koin */
+            color: #ffcc00;  /* Warna icon koin */
+            z-index: 1;
         }
     </style>
 </head>
@@ -153,12 +167,13 @@
             }
 
             let existing = dataPoin.find(entry => entry.nama === nama);
+            let pointsToAdd = 10;
             if (existing) {
-                existing.poin += 10;
+                existing.poin += pointsToAdd;
             } else {
                 dataPoin.push({
                     nama: nama,
-                    poin: 10
+                    poin: pointsToAdd
                 });
             }
 
@@ -171,6 +186,7 @@
                 triggerConfetti();
             }
 
+            animateCoins(pointsToAdd); // Animasikan koin
             document.getElementById('namaInput').value = ""; // Bersihkan input setelah menambahkan poin
         }
 
@@ -247,8 +263,45 @@
                 `;
                 table.appendChild(row);
             });
-            animateTotalPoin(dataPoin.reduce((sum, entry) => sum + entry.poin, 0));
+            let newTotalPoints = dataPoin.reduce((sum, entry) => sum + entry.poin, 0);
+            animateTotalPoin(newTotalPoints);
         }
+
+        function animateCoins(amount) {
+            const container = document.querySelector('.leaderboard-container');
+            const totalPoinElement = document.querySelector('.total-poin');
+            const totalPoinRect = totalPoinElement.getBoundingClientRect();
+
+            for (let i = 0; i < amount; i++) {
+                const coin = document.createElement('span'); // Ubah ke span
+                coin.classList.add('coin');
+                coin.textContent = '🪙'; // Gunakan icon koin
+                coin.style.left = Math.random() * container.offsetWidth + 'px';
+                coin.style.top = Math.random() * container.offsetHeight + 'px';
+
+                container.appendChild(coin);
+
+                // Animasikan koin
+                const coinRect = coin.getBoundingClientRect();
+
+                const deltaX = totalPoinRect.left + (totalPoinRect.width / 2) - (coinRect.left + coinRect.width / 2);
+                const deltaY = totalPoinRect.top + (totalPoinRect.height / 2) - (coinRect.top + coinRect.height / 2);
+
+                const animationDuration = 800 + Math.random() * 700;
+
+                coin.animate([
+                    { transform: 'translate(0, 0)', opacity: 1 },
+                    { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 0, fontSize: '0.5em' }
+                ], {
+                    duration: animationDuration,
+                    easing: 'ease-in'
+                }).finished.then(() => {
+                    coin.remove();
+                });
+            }
+        }
+
+
 
         // Panggil loadData saat halaman dimuat
         window.onload = function() {
