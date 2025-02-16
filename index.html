@@ -245,7 +245,13 @@
                 num /= 1000;
                 i++;
             }
-            return num.toFixed(1) + abbreviations[i]; // Memastikan satu angka desimal
+            let formatted = num.toFixed(1); // Memastikan satu angka desimal
+
+            // Hilangkan ".0" jika ada
+            if (formatted.endsWith(".0")) {
+                formatted = formatted.slice(0, -2);
+            }
+            return formatted + abbreviations[i];
         }
 
         function animateTotalPoin(newTotal) {
