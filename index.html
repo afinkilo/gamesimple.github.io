@@ -35,7 +35,8 @@
             color: var(--text-color);
             text-align: center;
             padding: 20px;
-            transition: background-color 0.3s, color 0.3s; /* Efek transisi tema */
+            transition: background-color 0.3s, color 0.3s;
+            /* Efek transisi tema */
         }
 
         .leaderboard-container {
@@ -236,8 +237,15 @@
             return '';
         }
 
+        // Fungsi untuk memformat angka menjadi K, M, dst.
         function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            const abbreviations = ["", "K", "M", "B", "T"]; // Ribuan, Juta, Miliar, Triliun
+            let i = 0;
+            while (num >= 1000 && i < abbreviations.length - 1) {
+                num /= 1000;
+                i++;
+            }
+            return num.toFixed(1) + abbreviations[i]; // Memastikan satu angka desimal
         }
 
         function animateTotalPoin(newTotal) {
