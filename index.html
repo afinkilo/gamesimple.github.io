@@ -35,7 +35,7 @@
             box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
             word-wrap: break-word;
             overflow-x: auto;
-            position: relative; /* Untuk positioning koin absolut */
+            position: relative;
         }
 
         table {
@@ -104,18 +104,18 @@
             font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
-            position: relative; /* For coin counter positioning */
+            position: relative;
         }
 
         .total-poin span {
             position: relative;
-            z-index: 2; /* Ensure span is above coins */
+            z-index: 2;
         }
 
         .coin {
             position: absolute;
-            font-size: 1.2em; /* Ukuran icon koin */
-            color: #ffcc00;  /* Warna icon koin */
+            font-size: 1.2em;
+            color: #ffcc00;
             z-index: 1;
         }
     </style>
@@ -186,7 +186,7 @@
                 triggerConfetti();
             }
 
-            animateCoins(pointsToAdd); // Animasikan koin
+            animateCoinsOneByOne(pointsToAdd); // Animasikan koin satu per satu
             document.getElementById('namaInput').value = ""; // Bersihkan input setelah menambahkan poin
         }
 
@@ -226,19 +226,7 @@
         }
 
         function animateTotalPoin(newTotal) {
-            let currentTotal = totalPoin;
-            let increment = Math.ceil((newTotal - currentTotal) / 30);
-
-            function updateCounter() {
-                if (currentTotal < newTotal) {
-                    currentTotal += increment;
-                    if (currentTotal > newTotal) currentTotal = newTotal;
-                    document.getElementById('totalPoin').textContent = formatNumber(currentTotal);
-                    requestAnimationFrame(updateCounter);
-                }
-            }
-            requestAnimationFrame(updateCounter);
-            totalPoin = newTotal;
+            document.getElementById('totalPoin').textContent = formatNumber(newTotal);
         }
 
         function renderTable() {
@@ -264,43 +252,53 @@
                 table.appendChild(row);
             });
             let newTotalPoints = dataPoin.reduce((sum, entry) => sum + entry.poin, 0);
-            animateTotalPoin(newTotalPoints);
+            totalPoin = newTotalPoints; // Update totalPoin variable
+            animateTotalPoin(totalPoin);
+
         }
 
-        function animateCoins(amount) {
+         function animateCoinsOneByOne(amount) {
             const container = document.querySelector('.leaderboard-container');
             const totalPoinElement = document.querySelector('.total-poin');
             const totalPoinRect = totalPoinElement.getBoundingClientRect();
+            let coinsAnimated = 0;
 
-            for (let i = 0; i < amount; i++) {
-                const coin = document.createElement('span'); // Ubah ke span
-                coin.classList.add('coin');
-                coin.textContent = '🪙'; // Gunakan icon koin
-                coin.style.left = Math.random() * container.offsetWidth + 'px';
-                coin.style.top = Math.random() * container.offsetHeight + 'px';
+            function animateSingleCoin() {
+                if (coinsAnimated < amount) {
+                    const coin = document.createElement('span'); // Ubah ke span
+                    coin.classList.add('coin');
+                    coin.textContent = '🪙'; // Gunakan icon koin
+                    coin.style.left = Math.random() * container.offsetWidth + 'px';
+                    coin.style.top = Math.random() * container.offsetHeight + 'px';
 
-                container.appendChild(coin);
+                    container.appendChild(coin);
 
-                // Animasikan koin
-                const coinRect = coin.getBoundingClientRect();
+                    // Animasikan koin
+                    const coinRect = coin.getBoundingClientRect();
 
-                const deltaX = totalPoinRect.left + (totalPoinRect.width / 2) - (coinRect.left + coinRect.width / 2);
-                const deltaY = totalPoinRect.top + (totalPoinRect.height / 2) - (coinRect.top + coinRect.height / 2);
+                    const deltaX = totalPoinRect.left + (totalPoinRect.width / 2) - (coinRect.left + coinRect.width / 2);
+                    const deltaY = totalPoinRect.top + (totalPoinRect.height / 2) - (coinRect.top + coinRect.height / 2);
 
-                const animationDuration = 800 + Math.random() * 700;
+                    const animationDuration = 800 + Math.random() * 700;
 
-                coin.animate([
-                    { transform: 'translate(0, 0)', opacity: 1 },
-                    { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 0, fontSize: '0.5em' }
-                ], {
-                    duration: animationDuration,
-                    easing: 'ease-in'
-                }).finished.then(() => {
-                    coin.remove();
-                });
+                    coin.animate([
+                        { transform: 'translate(0, 0)', opacity: 1 },
+                        { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 0, fontSize: '0.5em' }
+                    ], {
+                        duration: animationDuration,
+                        easing: 'ease-in'
+                    }).finished.then(() => {
+                        coin.remove();
+                        totalPoin++; // Increment totalPoin directly
+                        animateTotalPoin(totalPoin);  //Update tampilan total poin setelah satu coin masuk
+                        coinsAnimated++;
+                        animateSingleCoin(); // Animasikan koin berikutnya
+                    });
+                }
             }
-        }
 
+            animateSingleCoin(); // Mulai animasi koin pertama
+        }
 
 
         // Panggil loadData saat halaman dimuat
