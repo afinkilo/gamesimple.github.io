@@ -7,6 +7,7 @@
     <title>Leaderboard Point</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2"></script>
     <style>
+        /* Variabel CSS untuk Tema */
         :root {
             --bg-color: #f4f4f4;
             --text-color: #000;
@@ -17,12 +18,24 @@
             --button-hover: #e6b800;
         }
 
+        /* Tema Malam */
+        .dark-mode {
+            --bg-color: #333;
+            --text-color: #fff;
+            --table-bg: #444;
+            --table-header-bg: #666;
+            --table-header-text: #fff;
+            --button-bg: #888;
+            --button-hover: #999;
+        }
+
         body {
             font-family: 'Comic', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             text-align: center;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s; /* Efek transisi tema */
         }
 
         .leaderboard-container {
@@ -35,7 +48,7 @@
             box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
             word-wrap: break-word;
             overflow-x: auto;
-            position: relative;
+            transition: background-color 0.3s;
         }
 
         table {
@@ -43,6 +56,7 @@
             border-collapse: collapse;
             background: var(--table-bg);
             border-radius: 10px;
+            transition: background-color 0.3s;
         }
 
         th,
@@ -51,6 +65,7 @@
             padding: 15px;
             text-align: center;
             font-size: 18px;
+            transition: color 0.3s;
         }
 
         .nama-kolom {
@@ -60,6 +75,7 @@
         th {
             background-color: var(--table-header-bg);
             color: var(--table-header-text);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .rank {
@@ -79,6 +95,7 @@
             border: none;
             border-radius: 5px;
             font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         input {
@@ -104,19 +121,7 @@
             font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
-            position: relative;
-        }
-
-        .total-poin span {
-            position: relative;
-            z-index: 2;
-        }
-
-        .coin {
-            position: absolute;
-            font-size: 1.2em;
-            color: #ffcc00;
-            z-index: 1;
+            transition: color 0.3s;
         }
     </style>
 </head>
@@ -124,7 +129,7 @@
 <body>
     <h2>🏆 Leaderboard Point 🏆</h2>
     <div class="leaderboard-container">
-        <input type="text" id="namaInput" placeholder="Masukkan Nama atau 'reset' untuk menghapus data">
+        <input type="text" id="namaInput" placeholder="Masukkan Nama">
         <button onclick="tambahPoin()">+10 Poin</button>
         <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
         <table id="leaderboard">
@@ -157,23 +162,34 @@
             }
         }
 
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
         function tambahPoin() {
             let nama = document.getElementById('namaInput').value.trim();
             if (nama === '') return;
 
-            if (nama.toLowerCase() === 'reset') {
+            nama = nama.toLowerCase(); // Ubah ke huruf kecil
+
+            if (nama === 'reset') {
                 resetData();
                 return;
             }
 
-            let existing = dataPoin.find(entry => entry.nama === nama);
-            let pointsToAdd = 10;
+            if (nama === 'night') {
+                toggleDarkMode();
+                document.getElementById('namaInput').value = "";
+                return;
+            }
+
+            let existing = dataPoin.find(entry => entry.nama.toLowerCase() === nama); // Pencarian case-insensitive
             if (existing) {
-                existing.poin += pointsToAdd;
+                existing.poin += 10;
             } else {
                 dataPoin.push({
                     nama: nama,
-                    poin: pointsToAdd
+                    poin: 10
                 });
             }
 
@@ -186,7 +202,6 @@
                 triggerConfetti();
             }
 
-            animateCoinsOneByOne(pointsToAdd); // Animasikan koin satu per satu
             document.getElementById('namaInput').value = ""; // Bersihkan input setelah menambahkan poin
         }
 
@@ -226,7 +241,19 @@
         }
 
         function animateTotalPoin(newTotal) {
-            document.getElementById('totalPoin').textContent = formatNumber(newTotal);
+            let currentTotal = totalPoin;
+            let increment = Math.ceil((newTotal - currentTotal) / 30);
+
+            function updateCounter() {
+                if (currentTotal < newTotal) {
+                    currentTotal += increment;
+                    if (currentTotal > newTotal) currentTotal = newTotal;
+                    document.getElementById('totalPoin').textContent = formatNumber(currentTotal);
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            requestAnimationFrame(updateCounter);
+            totalPoin = newTotal;
         }
 
         function renderTable() {
@@ -251,55 +278,8 @@
                 `;
                 table.appendChild(row);
             });
-            let newTotalPoints = dataPoin.reduce((sum, entry) => sum + entry.poin, 0);
-            totalPoin = newTotalPoints; // Update totalPoin variable
-            animateTotalPoin(totalPoin);
-
+            animateTotalPoin(dataPoin.reduce((sum, entry) => sum + entry.poin, 0));
         }
-
-         function animateCoinsOneByOne(amount) {
-            const container = document.querySelector('.leaderboard-container');
-            const totalPoinElement = document.querySelector('.total-poin');
-            const totalPoinRect = totalPoinElement.getBoundingClientRect();
-            let coinsAnimated = 0;
-
-            function animateSingleCoin() {
-                if (coinsAnimated < amount) {
-                    const coin = document.createElement('span'); // Ubah ke span
-                    coin.classList.add('coin');
-                    coin.textContent = '🪙'; // Gunakan icon koin
-                    coin.style.left = Math.random() * container.offsetWidth + 'px';
-                    coin.style.top = Math.random() * container.offsetHeight + 'px';
-
-                    container.appendChild(coin);
-
-                    // Animasikan koin
-                    const coinRect = coin.getBoundingClientRect();
-
-                    const deltaX = totalPoinRect.left + (totalPoinRect.width / 2) - (coinRect.left + coinRect.width / 2);
-                    const deltaY = totalPoinRect.top + (totalPoinRect.height / 2) - (coinRect.top + coinRect.height / 2);
-
-                    const animationDuration = 800 + Math.random() * 700;
-
-                    coin.animate([
-                        { transform: 'translate(0, 0)', opacity: 1 },
-                        { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 0, fontSize: '0.5em' }
-                    ], {
-                        duration: animationDuration,
-                        easing: 'ease-in'
-                    }).finished.then(() => {
-                        coin.remove();
-                        totalPoin++; // Increment totalPoin directly
-                        animateTotalPoin(totalPoin);  //Update tampilan total poin setelah satu coin masuk
-                        coinsAnimated++;
-                        animateSingleCoin(); // Animasikan koin berikutnya
-                    });
-                }
-            }
-
-            animateSingleCoin(); // Mulai animasi koin pertama
-        }
-
 
         // Panggil loadData saat halaman dimuat
         window.onload = function() {
