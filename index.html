@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Poin</title>
+    <title>Leaderboard Poin</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2"></script>
     <style>
         :root {
@@ -21,8 +21,9 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             text-align: center;
+            padding: 20px; /* Added padding to the body */
         }
-        
+
         .leaderboard-container {
             width: 90%;
             max-width: 600px;
@@ -31,8 +32,9 @@
             padding: 15px;
             border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            word-wrap: break-word; /* Added for container text wrapping */
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -40,29 +42,30 @@
             border-radius: 10px;
             overflow: hidden;
         }
-        
+
         th, td {
             border-bottom: 2px solid #ddd;
             padding: 15px;
             text-align: center;
             font-size: 18px;
+            word-break: break-word; /* Added to ensure text wraps within cells */
         }
-        
+
         th {
             background-color: var(--table-header-bg);
             color: var(--table-header-text);
         }
-        
+
         .rank {
             font-weight: bold;
             font-size: 20px;
         }
-        
+
         .highlight {
             background-color: #ffeb99;
             font-weight: bold;
         }
-        
+
         input, button {
             padding: 10px;
             margin: 10px;
@@ -70,7 +73,7 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        
+
         input {
             width: 80%;
             max-width: 300px;
@@ -78,18 +81,18 @@
             background: var(--table-bg);
             color: var(--text-color);
         }
-        
+
         button {
             background-color: var(--button-bg);
             color: black;
             cursor: pointer;
             font-weight: bold;
         }
-        
+
         button:hover {
             background-color: var(--button-hover);
         }
-        
+
         .total-poin {
             font-size: 20px;
             font-weight: bold;
@@ -121,14 +124,14 @@
         function tambahPoin() {
             let nama = document.getElementById('namaInput').value.trim();
             if (nama === '') return;
-            
+
             let existing = dataPoin.find(entry => entry.nama === nama);
             if (existing) {
                 existing.poin += 10;
             } else {
                 dataPoin.push({ nama: nama, poin: 10 });
             }
-            
+
             dataPoin.sort((a, b) => b.poin - a.poin);
             renderTable();
 
@@ -162,7 +165,7 @@
         function animateTotalPoin(newTotal) {
             let currentTotal = totalPoin;
             let increment = Math.ceil((newTotal - currentTotal) / 30);
-            
+
             function updateCounter() {
                 if (currentTotal < newTotal) {
                     currentTotal += increment;
@@ -185,7 +188,7 @@
                     <th>Bintang</th>
                 </tr>
             `;
-            
+
             dataPoin.forEach((entry, index) => {
                 let row = document.createElement('tr');
                 if (index < 3) row.classList.add('highlight');
