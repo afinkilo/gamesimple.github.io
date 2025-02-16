@@ -33,6 +33,7 @@
             border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
             word-wrap: break-word;
+            overflow-x: auto; /* Tambahkan scroll horizontal jika konten terlalu lebar */
         }
 
         table {
@@ -40,7 +41,6 @@
             border-collapse: collapse;
             background: var(--table-bg);
             border-radius: 10px;
-            overflow: hidden;
         }
 
         th, td {
@@ -50,7 +50,6 @@
             font-size: 18px;
         }
 
-        /* Tambahkan class khusus untuk kolom Nama */
         .nama-kolom {
             word-break: break-word;
         }
