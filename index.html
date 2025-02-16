@@ -4,59 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Poin</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2"></script>
     <style>
         :root {
             --bg-color: #f4f4f4;
             --text-color: #000;
             --table-bg: white;
-            --table-header-bg: #4CAF50;
-            --table-header-text: white;
-            --button-bg: #4CAF50;
-            --button-hover: #45a049;
-        }
-
-        body.dark-mode {
-            --bg-color: #1e1e1e;
-            --text-color: #fff;
-            --table-bg: #333;
-            --table-header-bg: #008000;
-            --table-header-text: white;
-            --button-bg: #008000;
-            --button-hover: #006400;
+            --table-header-bg: #ffcc00;
+            --table-header-text: #000;
+            --button-bg: #ffcc00;
+            --button-hover: #e6b800;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
+            font-family: 'Comic', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             text-align: center;
         }
+        
+        .leaderboard-container {
+            width: 90%;
+            max-width: 600px;
+            margin: auto;
+            background: var(--table-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+        
         table {
             width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
             border-collapse: collapse;
             background: var(--table-bg);
-            color: var(--text-color);
+            border-radius: 10px;
+            overflow: hidden;
         }
+        
         th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            border-bottom: 2px solid #ddd;
+            padding: 15px;
             text-align: center;
+            font-size: 18px;
         }
+        
         th {
             background-color: var(--table-header-bg);
             color: var(--table-header-text);
         }
-        tr:nth-child(even) {
-            background-color: rgba(200, 200, 200, 0.2);
+        
+        .rank {
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .highlight {
+            background-color: #ffeb99;
+            font-weight: bold;
         }
         
         input, button {
             padding: 10px;
-            margin: 5px;
+            margin: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
@@ -72,8 +81,9 @@
         
         button {
             background-color: var(--button-bg);
-            color: white;
+            color: black;
             cursor: pointer;
+            font-weight: bold;
         }
         
         button:hover {
@@ -81,35 +91,32 @@
         }
         
         .total-poin {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1"></script>
 </head>
 <body>
-    <h2>Leaderboard Poin</h2>
-    <button onclick="toggleTheme()">🌙/☀️</button>
-    <input type="text" id="namaInput" placeholder="Masukkan Nama">
-    <button onclick="tambahPoin()">Tambah Poin</button>
-    <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
-    <table id="leaderboard">
-        <tr>
-            <th>Rangking</th>
-            <th>Nama</th>
-            <th>Poin</th>
-        </tr>
-    </table>
+    <h2>🏆 Leaderboard Poin 🏆</h2>
+    <div class="leaderboard-container">
+        <input type="text" id="namaInput" placeholder="Masukkan Nama">
+        <button onclick="tambahPoin()">+10 Poin</button>
+        <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
+        <table id="leaderboard">
+            <tr>
+                <th>Peringkat</th>
+                <th>Nama</th>
+                <th>Poin</th>
+                <th>Bintang</th>
+            </tr>
+        </table>
+    </div>
 
     <script>
         let dataPoin = [];
         let totalPoin = 0;
-        let previousTopName = null;
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-        }
+        let previousTopPlayer = "";
 
         function tambahPoin() {
             let nama = document.getElementById('namaInput').value.trim();
@@ -123,70 +130,74 @@
             }
             
             dataPoin.sort((a, b) => b.poin - a.poin);
-            checkTopRanking();
             renderTable();
-            animateTotalPoin();
+
+            if (dataPoin.length > 0 && dataPoin[0].nama !== previousTopPlayer) {
+                previousTopPlayer = dataPoin[0].nama;
+                triggerConfetti();
+            }
         }
 
-        function animateTotalPoin() {
-            let totalSpan = document.getElementById("totalPoin");
-            let currentTotal = totalPoin;
-            totalPoin = dataPoin.reduce((sum, item) => sum + item.poin, 0);
-            let increment = (totalPoin - currentTotal) / 20;
-            let count = 0;
-            let interval = setInterval(() => {
-                if (count >= 20) {
-                    totalSpan.textContent = totalPoin;
-                    clearInterval(interval);
-                } else {
-                    currentTotal += increment;
-                    totalSpan.textContent = Math.round(currentTotal);
-                    count++;
-                }
-            }, 50);
+        function triggerConfetti() {
+            confetti({
+                particleCount: 900,
+                spread: 900,
+                startVelocity: 50,
+                scalar: 1.5,
+                origin: { y: 0.2 }
+            });
         }
 
         function getStars(rank) {
-            if (rank === 1) return '⭐⭐⭐';
-            if (rank === 2) return '⭐⭐';
-            if (rank === 3) return '⭐';
+            if (rank === 1) return '🥇';
+            if (rank === 2) return '🥈';
+            if (rank === 3) return '🥉';
             return '';
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function animateTotalPoin(newTotal) {
+            let currentTotal = totalPoin;
+            let increment = Math.ceil((newTotal - currentTotal) / 30);
+            
+            function updateCounter() {
+                if (currentTotal < newTotal) {
+                    currentTotal += increment;
+                    if (currentTotal > newTotal) currentTotal = newTotal;
+                    document.getElementById('totalPoin').textContent = formatNumber(currentTotal);
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            requestAnimationFrame(updateCounter);
+            totalPoin = newTotal;
         }
 
         function renderTable() {
             let table = document.getElementById('leaderboard');
             table.innerHTML = `
                 <tr>
-                    <th>Rangking</th>
+                    <th>Peringkat</th>
                     <th>Nama</th>
                     <th>Poin</th>
+                    <th>Bintang</th>
                 </tr>
             `;
             
             dataPoin.forEach((entry, index) => {
-                let row = table.insertRow();
-                let stars = getStars(index + 1);
-                row.innerHTML = `<td>${index + 1} ${stars}</td><td>${entry.nama}</td><td>${entry.poin}</td>`;
+                let row = document.createElement('tr');
+                if (index < 3) row.classList.add('highlight');
+                row.innerHTML = `
+                    <td class="rank">${index + 1}</td>
+                    <td>${entry.nama}</td>
+                    <td>${formatNumber(entry.poin)}</td>
+                    <td>${getStars(index + 1)}</td>
+                `;
+                table.appendChild(row);
             });
-        }
-
-        function checkTopRanking() {
-            if (dataPoin.length === 0) return;
-            let topName = dataPoin[0].nama;
-            if (topName !== previousTopName) {
-                previousTopName = topName;
-                showConfetti();
-            }
-        }
-
-        function showConfetti() {
-            confetti({
-                particleCount: 200,
-                spread: 200,
-                startVelocity: 50,
-                scalar: 1.5,
-                origin: { y: 0.6 }
-            });
+            animateTotalPoin(dataPoin.reduce((sum, entry) => sum + entry.poin, 0));
         }
     </script>
 </body>
