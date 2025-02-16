@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,9 +32,9 @@
             background: var(--table-bg);
             padding: 15px;
             border-radius: 15px;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
             word-wrap: break-word;
-            overflow-x: auto; /* Tambahkan scroll horizontal jika konten terlalu lebar */
+            overflow-x: auto;
         }
 
         table {
@@ -43,7 +44,8 @@
             border-radius: 10px;
         }
 
-        th, td {
+        th,
+        td {
             border-bottom: 2px solid #ddd;
             padding: 15px;
             text-align: center;
@@ -69,7 +71,8 @@
             font-weight: bold;
         }
 
-        input, button {
+        input,
+        button {
             padding: 10px;
             margin: 10px;
             border: none;
@@ -103,6 +106,7 @@
         }
     </style>
 </head>
+
 <body>
     <h2>🏆 Leaderboard Poin 🏆</h2>
     <div class="leaderboard-container">
@@ -111,10 +115,10 @@
         <div class="total-poin">Total Poin: <span id="totalPoin">0</span> 🪙</div>
         <table id="leaderboard">
             <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Point</th>
-                <th>Medal</th>
+                <th>Peringkat</th>
+                <th>Nama</th>
+                <th>Poin</th>
+                <th>Bintang</th>
             </tr>
         </table>
     </div>
@@ -123,6 +127,21 @@
         let dataPoin = [];
         let totalPoin = 0;
         let previousTopPlayer = "";
+        const STORAGE_KEY = 'leaderboardData'; // Kunci untuk menyimpan di localStorage
+
+        // Fungsi untuk menyimpan data ke localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataPoin));
+        }
+
+        // Fungsi untuk memuat data dari localStorage
+        function loadData() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                dataPoin = JSON.parse(storedData);
+                dataPoin.sort((a, b) => b.poin - a.poin); // Urutkan setelah memuat
+            }
+        }
 
         function tambahPoin() {
             let nama = document.getElementById('namaInput').value.trim();
@@ -132,11 +151,15 @@
             if (existing) {
                 existing.poin += 10;
             } else {
-                dataPoin.push({ nama: nama, poin: 10 });
+                dataPoin.push({
+                    nama: nama,
+                    poin: 10
+                });
             }
 
             dataPoin.sort((a, b) => b.poin - a.poin);
             renderTable();
+            saveData(); // Simpan data setelah setiap perubahan
 
             if (dataPoin.length > 0 && dataPoin[0].nama !== previousTopPlayer) {
                 previousTopPlayer = dataPoin[0].nama;
@@ -150,7 +173,9 @@
                 spread: 900,
                 startVelocity: 50,
                 scalar: 1.5,
-                origin: { y: 0.2 }
+                origin: {
+                    y: 0.2
+                }
             });
         }
 
@@ -185,10 +210,10 @@
             let table = document.getElementById('leaderboard');
             table.innerHTML = `
                 <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Point</th>
-                    <th>Medal</th>
+                    <th>Peringkat</th>
+                    <th>Nama</th>
+                    <th>Poin</th>
+                    <th>Bintang</th>
                 </tr>
             `;
 
@@ -205,6 +230,13 @@
             });
             animateTotalPoin(dataPoin.reduce((sum, entry) => sum + entry.poin, 0));
         }
+
+        // Panggil loadData saat halaman dimuat
+        window.onload = function() {
+            loadData();
+            renderTable(); // Render tabel setelah memuat data
+        };
     </script>
 </body>
+
 </html>
