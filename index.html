@@ -21,7 +21,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             text-align: center;
-            padding: 20px; /* Added padding to the body */
+            padding: 20px;
         }
 
         .leaderboard-container {
@@ -32,7 +32,7 @@
             padding: 15px;
             border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-            word-wrap: break-word; /* Added for container text wrapping */
+            word-wrap: break-word;
         }
 
         table {
@@ -48,7 +48,11 @@
             padding: 15px;
             text-align: center;
             font-size: 18px;
-            word-break: break-word; /* Added to ensure text wraps within cells */
+        }
+
+        /* Tambahkan class khusus untuk kolom Nama */
+        .nama-kolom {
+            word-break: break-word;
         }
 
         th {
@@ -101,7 +105,7 @@
     </style>
 </head>
 <body>
-    <h2>🏆 Leaderboard Poins 🏆</h2>
+    <h2>🏆 Leaderboard Poin 🏆</h2>
     <div class="leaderboard-container">
         <input type="text" id="namaInput" placeholder="Masukkan Nama">
         <button onclick="tambahPoin()">+10 Poin</button>
@@ -194,7 +198,7 @@
                 if (index < 3) row.classList.add('highlight');
                 row.innerHTML = `
                     <td class="rank">${index + 1}</td>
-                    <td>${entry.nama}</td>
+                    <td class="nama-kolom">${entry.nama}</td>
                     <td>${formatNumber(entry.poin)}</td>
                     <td>${getStars(index + 1)}</td>
                 `;
